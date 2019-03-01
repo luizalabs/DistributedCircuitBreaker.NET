@@ -1,6 +1,7 @@
 using NSubstitute;
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using Xunit;
 
 namespace CircuitBreaker.UnitTests
@@ -46,6 +47,56 @@ namespace CircuitBreaker.UnitTests
             var cbf = new CircuitBreaker(key, windowDuration, durationOfBreak, rules, repository);
             Assert.True(cbf.IsOpen());
             Assert.Equal(numberOfFailuresThreshold, actualNumberOfFailures);
+        }
+
+
+
+        [Fact]
+        public void ExecuteAction_ShouldThrowExceptionAfterThresholdExceededs()
+        {
+            //arrange
+            string key = "testKey";
+            int numberOfFailuresThreshold = 2;
+            TimeSpan windowDuration = TimeSpan.FromSeconds(1000);
+            TimeSpan durationOfBreak = TimeSpan.FromSeconds(15);
+            IRepository repository = Substitute.For<IRepository>();
+
+            Dictionary<string, byte[]> dic = new Dictionary<string, byte[]>();
+
+            SetRepositoryBehavior(key, repository, dic);
+
+            List<IRule> rules = new List<IRule>
+            {
+                new FixedNumberOfFailuresRule(numberOfFailuresThreshold)
+            };
+
+            int actualNumberOfFailures = 0;
+
+            //act
+            for (int i = 1; i <= numberOfFailuresThreshold +1; i++)
+            {
+                try
+                {
+                    var cb = new CircuitBreaker(key, windowDuration, durationOfBreak, rules, repository);
+                    cb.ExecuteAction(() => { throw new TimeoutException(); });
+                }
+                catch (BrokenCircuitException)
+                {
+                    actualNumberOfFailures = i - 1;//i stores the actual trial 
+                    break;
+                }
+            }
+
+            var cbOpened = new CircuitBreaker(key, windowDuration, durationOfBreak, rules, repository);
+            Assert.True(cbOpened.IsOpen());
+            Assert.Equal(numberOfFailuresThreshold, actualNumberOfFailures);
+
+            Thread.Sleep(durationOfBreak);
+
+            var cbClosed = new CircuitBreaker(key, windowDuration, durationOfBreak, rules, repository);
+            cbClosed.ExecuteAction(() => { throw new TimeoutException(); });
+            Assert.False(cbClosed.IsOpen());
+
         }
 
         private static void SetRepositoryBehavior(string key, IRepository repository, Dictionary<string,byte[]> dic)

@@ -1,22 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace CircuitBreaker
+﻿namespace CircuitBreaker
 {
     public interface IRepository
     {
         void Increment(string key);
-        //
-        // Summary:
-        //     Gets a value with the given key.
-        //
-        // Parameters:
-        //   key:
-        //     A string identifying the requested value.
-        //
-        // Returns:
-        //     The located value or null.
+        /// <summary>
+        ///  Gets a value with the given key.
+        /// </summary>
+        /// <param name="key">A string identifying the requested value.</param>
+        /// <returns>The located value or null.</returns>
         byte[] Get(string key);
 
         string GetString(string key);
