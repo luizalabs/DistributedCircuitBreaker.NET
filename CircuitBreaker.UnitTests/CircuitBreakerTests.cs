@@ -35,7 +35,7 @@ namespace CircuitBreaker.UnitTests
             {
                 try
                 {
-                    var cb = new CircuitBreaker(key, windowDuration, durationOfBreak, rules, repository);
+                    var cb = CircuitBreakBuilder.Build(key, windowDuration, durationOfBreak, rules, repository);
                     cb.ExecuteAction(() => { throw new TimeoutException(); });
                 }
                 catch (BrokenCircuitException ex)
@@ -45,7 +45,7 @@ namespace CircuitBreaker.UnitTests
                 }
             }
 
-            var cbf = new CircuitBreaker(key, windowDuration, durationOfBreak, rules, repository);
+            var cbf = CircuitBreakBuilder.Build(key, windowDuration, durationOfBreak, rules, repository);
 
             //Assert
             Assert.True(cbf.IsOpen());
@@ -78,7 +78,7 @@ namespace CircuitBreaker.UnitTests
             {
                 try
                 {
-                    var cb = new CircuitBreaker(key, windowDuration, durationOfBreak, rules, repository);
+                    var cb = CircuitBreakBuilder.Build(key, windowDuration, durationOfBreak, rules, repository);
                     cb.ExecuteAction(() => { throw new TimeoutException(); });
                 }
                 catch (BrokenCircuitException)
@@ -88,66 +88,17 @@ namespace CircuitBreaker.UnitTests
                 }
             }
 
-            var cbOpened = new CircuitBreaker(key, windowDuration, durationOfBreak, rules, repository);
+            var cbOpened = CircuitBreakBuilder.Build(key, windowDuration, durationOfBreak, rules, repository);
             Assert.True(cbOpened.IsOpen());
             Assert.Equal(numberOfFailuresThreshold, actualNumberOfFailures);
 
             Thread.Sleep(durationOfBreak);
             dic.Clear();
 
-            var cbClosed = new CircuitBreaker(key, windowDuration, durationOfBreak, rules, repository);
+            var cbClosed = CircuitBreakBuilder.Build(key, windowDuration, durationOfBreak, rules, repository);
             cbClosed.ExecuteAction(() => { throw new TimeoutException(); });
             //Assert
             Assert.False(cbClosed.IsOpen());
-        }
-
-
-        [Fact]
-        public void ShouldThrowExceptionWhenInstantiatePassingEmptyRuleList()
-        {
-            //Arrange
-            string key = "testKey";
-            TimeSpan windowDuration = TimeSpan.FromSeconds(1000);
-            TimeSpan durationOfBreak = TimeSpan.FromSeconds(15);
-            IRepository repository = Substitute.For<IRepository>();
-            List<IRule> rules = new List<IRule>();
-
-            //Act
-            Action act = () => new CircuitBreaker(key, windowDuration, durationOfBreak, rules, repository);
-
-            //Assert
-            Assert.Throws<ArgumentException>(act);
-        }
-
-        [Fact]
-        public void ShouldThrowExceptionWhenInstantiateWithNoKey()
-        {
-            //Arrange
-            TimeSpan windowDuration = TimeSpan.FromSeconds(1000);
-            TimeSpan durationOfBreak = TimeSpan.FromSeconds(15);
-            IRepository repository = Substitute.For<IRepository>();
-            List<IRule> rules = new List<IRule>();
-
-            //Act
-            Action act = () => new CircuitBreaker(string.Empty, windowDuration, durationOfBreak, rules, repository);
-
-            //Assert
-            Assert.Throws<ArgumentException>(act);
-        }
-
-        [Fact]
-        public void ShouldThrowExceptionWhenInstantiateWithoutRepository()
-        {
-            //Arrange
-            TimeSpan windowDuration = TimeSpan.FromSeconds(1000);
-            TimeSpan durationOfBreak = TimeSpan.FromSeconds(15);
-            List<IRule> rules = new List<IRule>();
-
-            //Act
-            Action act = () => new CircuitBreaker("http://www.contoso.com", windowDuration, durationOfBreak, rules, null);
-
-            //Assert
-            Assert.Throws<ArgumentException>(act);
         }
 
         private static void SetRepositoryBehavior(string key, IRepository repository, Dictionary<string,byte[]> dic)

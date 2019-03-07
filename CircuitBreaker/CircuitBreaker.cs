@@ -20,17 +20,8 @@ namespace CircuitBreaker
         /// <param name="durationOfBreak">The amount of time the circuit should be open after changed to an open state</param>
         /// <param name="rules">Rules to be evaluated to decide if the state should be set to OPEN</param>
         /// <param name="repository">The repository that is used to store the CB information</param>
-        public CircuitBreaker(string key, TimeSpan windowDuration, TimeSpan durationOfBreak, List<IRule> rules, IRepository repository)
+        internal CircuitBreaker(string key, TimeSpan windowDuration, TimeSpan durationOfBreak, List<IRule> rules, IRepository repository)
         {
-            if (string.IsNullOrEmpty(key))
-                throw new ArgumentException("key must be provided");
-
-            if (rules == null || rules.Count == 0)
-                throw new ArgumentException("At least one rule must be provided");
-
-            if (repository == null)
-                throw new ArgumentException("Repository could not be null");
-
             _rules = rules;
             _healthCountService = new HealthCountService(key, repository, windowDuration, durationOfBreak);
         }
@@ -41,7 +32,7 @@ namespace CircuitBreaker
         /// <param name="key">The Key that defines a unique unit to be controlled by circuit breaker. E.g. a URI.</param>
         /// <param name="rules">Rules to be evaluated to decide if the state should be set to OPEN</param>
         /// <param name="repository">The repository that is used to store the CB information</param>
-        public CircuitBreaker(string key, List<IRule> rules, IRepository repository): 
+        internal CircuitBreaker(string key, List<IRule> rules, IRepository repository): 
             this(key, TimeSpan.FromMinutes(1), TimeSpan.FromMinutes(5),rules, repository)
         {
 
