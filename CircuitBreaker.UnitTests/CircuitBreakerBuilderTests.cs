@@ -6,7 +6,7 @@ using Xunit;
 
 namespace CircuitBreaker.UnitTests
 {
-    public class CircuitBreakBuilderTests
+    public class CircuitBreakerBuilderTests
     {
 
         [Fact]

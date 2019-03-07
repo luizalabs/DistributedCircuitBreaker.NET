@@ -23,11 +23,6 @@ namespace CircuitBreaker.UnitTests
 
             SetRepositoryBehavior(key, repository, dic);
 
-            List<IRule> rules = new List<IRule>
-            {
-                new FixedNumberOfFailuresRule(numberOfFailuresThreshold)
-            };
-
             int actualNumberOfFailures = 0;
 
             //Act
@@ -35,7 +30,7 @@ namespace CircuitBreaker.UnitTests
             {
                 try
                 {
-                    var cb = CircuitBreakBuilder.Build(key, windowDuration, durationOfBreak, rules, repository);
+                    var cb = CircuitBreakBuilder.Build(key, windowDuration, durationOfBreak, repository, numberOfFailuresThreshold);
                     cb.ExecuteAction(() => { throw new TimeoutException(); });
                 }
                 catch (BrokenCircuitException ex)
@@ -45,7 +40,7 @@ namespace CircuitBreaker.UnitTests
                 }
             }
 
-            var cbf = CircuitBreakBuilder.Build(key, windowDuration, durationOfBreak, rules, repository);
+            var cbf = CircuitBreakBuilder.Build(key, windowDuration, durationOfBreak, repository, numberOfFailuresThreshold);
 
             //Assert
             Assert.True(cbf.IsOpen());
@@ -66,11 +61,6 @@ namespace CircuitBreaker.UnitTests
 
             SetRepositoryBehavior(key, repository, dic);
 
-            List<IRule> rules = new List<IRule>
-            {
-                new FixedNumberOfFailuresRule(numberOfFailuresThreshold)
-            };
-
             int actualNumberOfFailures = 0;
 
             //Act
@@ -78,7 +68,7 @@ namespace CircuitBreaker.UnitTests
             {
                 try
                 {
-                    var cb = CircuitBreakBuilder.Build(key, windowDuration, durationOfBreak, rules, repository);
+                    var cb = CircuitBreakBuilder.Build(key, windowDuration, durationOfBreak, repository, numberOfFailuresThreshold);
                     cb.ExecuteAction(() => { throw new TimeoutException(); });
                 }
                 catch (BrokenCircuitException)
@@ -88,14 +78,14 @@ namespace CircuitBreaker.UnitTests
                 }
             }
 
-            var cbOpened = CircuitBreakBuilder.Build(key, windowDuration, durationOfBreak, rules, repository);
+            var cbOpened = CircuitBreakBuilder.Build(key, windowDuration, durationOfBreak, repository, numberOfFailuresThreshold);
             Assert.True(cbOpened.IsOpen());
             Assert.Equal(numberOfFailuresThreshold, actualNumberOfFailures);
 
             Thread.Sleep(durationOfBreak);
             dic.Clear();
 
-            var cbClosed = CircuitBreakBuilder.Build(key, windowDuration, durationOfBreak, rules, repository);
+            var cbClosed = CircuitBreakBuilder.Build(key, windowDuration, durationOfBreak, repository, numberOfFailuresThreshold);
             cbClosed.ExecuteAction(() => { throw new TimeoutException(); });
             //Assert
             Assert.False(cbClosed.IsOpen());

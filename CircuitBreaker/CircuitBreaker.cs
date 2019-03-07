@@ -26,18 +26,6 @@ namespace CircuitBreaker
             _healthCountService = new HealthCountService(key, repository, windowDuration, durationOfBreak);
         }
 
-        /// <summary>
-        /// Initializes an instance of CircuitBreaker setting a default value of 1 minute to windowDuration and 5 minutes to durationOfBreak
-        /// </summary>
-        /// <param name="key">The Key that defines a unique unit to be controlled by circuit breaker. E.g. a URI.</param>
-        /// <param name="rules">Rules to be evaluated to decide if the state should be set to OPEN</param>
-        /// <param name="repository">The repository that is used to store the CB information</param>
-        internal CircuitBreaker(string key, List<IRule> rules, IRepository repository): 
-            this(key, TimeSpan.FromMinutes(1), TimeSpan.FromMinutes(5),rules, repository)
-        {
-
-        }
-
         public CircuitState State
         {
             get { return _healthCountService.GetState(); }
