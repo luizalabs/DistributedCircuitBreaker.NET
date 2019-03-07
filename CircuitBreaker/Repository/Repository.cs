@@ -9,15 +9,23 @@ namespace CircuitBreaker.Repository
         {
             _repository = repository;
         }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="key"></param>
+        /// <returns>Returns the value of the key. If the key does not exist returns zero</returns>
         public int GetInt32(string key)
         {
-            var str = _repository.GetString(key);
-            return int.Parse(str);
+            if (KeyExists(key))
+                return int.Parse(_repository.GetString(key));
+            else
+                return default(int);
         }
 
-        public void SetInt32(string key, int value)
+        public void SetInt32(string key, int value, TimeSpan timeSpan)
         {
-            _repository.Set(key, BitConverter.GetBytes(value));
+            _repository.Set(key, BitConverter.GetBytes(value), timeSpan);
         }
 
         public long GetInt64(string key)

@@ -1,6 +1,7 @@
-﻿using CircuitBreaker.Domain;
+﻿using CircuitBreaker.Core;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace CircuitBreaker
 {
@@ -8,9 +9,6 @@ namespace CircuitBreaker
     {
         private List<IRule> _rules;
         private HealthCount _healthCount ;
-        private string _key;
-        private TimeSpan _windowDuration;
-        private TimeSpan _durationOfBreak;
         private Exception _lastException;
         private IHealthCountService _healthCountService;
 
@@ -24,24 +22,39 @@ namespace CircuitBreaker
         /// <param name="repository">The repository that is used to store the CB information</param>
         public CircuitBreaker(string key, TimeSpan windowDuration, TimeSpan durationOfBreak, List<IRule> rules, IRepository repository)
         {
+            if (string.IsNullOrEmpty(key))
+                throw new ArgumentException("key must be provided");
+
+            if (rules == null || rules.Count == 0)
+                throw new ArgumentException("At least one rule must be provided");
+
+            if (repository == null)
+                throw new ArgumentException("Repository could not be null");
+
             _rules = rules;
-            _key = key;
-            _durationOfBreak = durationOfBreak;
-            _windowDuration = windowDuration;
-            _healthCountService = new HealthCountService(repository);
-            SetHealthCount(key);
-            CreateNewWindowIfExpired();
+            _healthCountService = new HealthCountService(key, repository, windowDuration, durationOfBreak);
+        }
+
+        /// <summary>
+        /// Initializes an instance of CircuitBreaker setting a default value of 1 minute to windowDuration and 5 minutes to durationOfBreak
+        /// </summary>
+        /// <param name="key">The Key that defines a unique unit to be controlled by circuit breaker. E.g. a URI.</param>
+        /// <param name="rules">Rules to be evaluated to decide if the state should be set to OPEN</param>
+        /// <param name="repository">The repository that is used to store the CB information</param>
+        public CircuitBreaker(string key, List<IRule> rules, IRepository repository): 
+            this(key, TimeSpan.FromMinutes(1), TimeSpan.FromMinutes(5),rules, repository)
+        {
+
         }
 
         public CircuitState State
         {
-            get { return _healthCountService.GetState(_key); }
-            set { _healthCountService.SetState(_key, value); }
+            get { return _healthCountService.GetState(); }
         }
 
-        private void SetHealthCount(string key)
+        private void SetCurrentHealthCount()
         {
-            _healthCount = _healthCountService.GetCurrentHealthCount(key);            
+            _healthCount = _healthCountService.GetCurrentHealthCount();            
         }
 
         /// <summary>
@@ -50,90 +63,33 @@ namespace CircuitBreaker
         /// <returns>bool</returns>
         public bool IsOpen()
         {
-            return _healthCountService.GetState(_key).Equals(CircuitState.Open);
-
+            return State.Equals(CircuitState.Open);
         }
 
         /// <summary>
-        /// Check All rules. If all rules returns true, open circuit
+        /// Check All rules. If all rules returns true, should open circuit
         /// </summary>
         /// <param name="ex"></param>
-        private void ValidateRules(Exception ex)
+        private bool ShouldOpenCircuit()
         {
-            bool shouldBreak = true;
-            _rules.ForEach(r =>
-            {
-                if (r.ShouldOpenCircuitBreaker(_healthCount) == false)
-                    shouldBreak = false;
-            });
-
-            if (!shouldBreak)
-                return;
-
-            OpenCircuit();
+            return _rules.All(rule => rule.ValidateRule(_healthCount));
         }
 
         private void OpenCircuit()
         {
-            State = CircuitState.Open;
-
-            _healthCountService.SetBreakedAt(_key, DateTime.UtcNow.Ticks);
-            throw new BrokenCircuitException("The circuit is now open and is not allowing calls.", _lastException);
+            _healthCountService.OpenCircuit();
         }
 
         private void IncrementFailure()
         {
-            CreateNewWindowIfExpired();
             _healthCount.Failures++;
-            _healthCountService.IncrementFailure(_key);
+            _healthCountService.IncrementFailure();
         }
 
         private void IncrementSuccess()
         {
-            CreateNewWindowIfExpired();
             _healthCount.Successes++;
-            _healthCountService.IncrementSuccess(_key);
-        }
-
-        private void CreateNewWindowIfExpired()
-        {
-            if(State == CircuitState.Closed && IsWindowExpired())
-            {
-                CreateNewWindow();
-                return;
-            }
-
-            if(IsOpen() && IsBreakExpired())
-            {
-                CreateNewWindow();
-                return;
-            }
-        }
-
-        private void CreateNewWindow()
-        {
-            _healthCount = _healthCountService.GenerateNewHealthCounter(_key);
-        }
-
-        private bool IsWindowExpired()
-        {
-            long now = DateTime.UtcNow.Ticks;
-            if (_healthCount == null || (now - _healthCount.StartedAt >= _windowDuration.Ticks))
-                return true;
-
-            return false;
-        }
-
-        private bool IsBreakExpired()
-        {
-            if (State == CircuitState.Closed)
-                return true;
-
-            long now = DateTime.UtcNow.Ticks;
-            if (State == CircuitState.Open && (now - _healthCountService.GetBreakedAt(_key) > _durationOfBreak.Ticks))
-                return true;
-
-            return false;
+            _healthCountService.IncrementSuccess();
         }
 
         private void ValidateCircuitStatus()
@@ -142,13 +98,8 @@ namespace CircuitBreaker
             {
                 case CircuitState.Closed:
                     break;
-                case CircuitState.HalfOpen:
-                    //TODO
-                    break;
                 case CircuitState.Open:
                     throw new BrokenCircuitException("The circuit is now open and is not allowing calls.", _lastException);
-                case CircuitState.Isolated:
-                    //throw new IsolatedCircuitException("The circuit is manually held open and is not allowing calls.");
                 default:
                     throw new InvalidOperationException("Unhandled CircuitState.");
             }
@@ -156,30 +107,31 @@ namespace CircuitBreaker
 
         public TResult ExecuteAction<TResult>(Func<TResult> action)
         {
+            SetCurrentHealthCount();
             ValidateCircuitStatus();
 
-            bool success = true;
             try
             {
-                return action();
+                TResult result = action();
+                IncrementSuccess();
+                return result;
             }
             catch (Exception ex)
             {
-                success = false;
+                _lastException = ex;
                 IncrementFailure();
-                ValidateRules(ex);
+                if (ShouldOpenCircuit())
+                {
+                    OpenCircuit();
+                    throw new BrokenCircuitException("The circuit is now open and is not allowing calls.", _lastException);
+                }
                 throw ex;
-                //_lastException = ex;
-            }
-            finally
-            {
-                if(success)
-                    IncrementSuccess();
             }
         }
 
         public void ExecuteAction(Action action)
         {
+            SetCurrentHealthCount();
             ValidateCircuitStatus();
             try
             {
@@ -188,9 +140,13 @@ namespace CircuitBreaker
             }
             catch (Exception ex)
             {
+                _lastException = ex;
                 IncrementFailure();
-                ValidateRules(ex);
-                //_lastException = ex;
+                if (ShouldOpenCircuit())
+                {
+                    OpenCircuit();
+                    throw new BrokenCircuitException("The circuit is now open and is not allowing calls.", _lastException);
+                }
             }
         }
     }

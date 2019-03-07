@@ -1,4 +1,6 @@
-﻿namespace CircuitBreaker
+﻿using System;
+
+namespace CircuitBreaker
 {
     public interface IRepository
     {
@@ -13,5 +15,7 @@
         string GetString(string key);
 
         void Set(string key, byte[] value);
+
+        void Set(string key, byte[] value, TimeSpan absoluteExpiration);
     }
 }

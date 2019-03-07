@@ -1,4 +1,6 @@
-﻿namespace CircuitBreaker
+﻿using CircuitBreaker.Core;
+
+namespace CircuitBreaker
 {
     public class ProportionFailuresRule : IRule
     {
@@ -8,7 +10,7 @@
             _failureThreshold = failureThreshold;
         }
 
-        public bool ShouldOpenCircuitBreaker(HealthCount healthCount)
+        public bool ValidateRule(HealthCount healthCount)
         {
             if ((healthCount.Failures / (decimal)healthCount.Total) > _failureThreshold)
                 return true;

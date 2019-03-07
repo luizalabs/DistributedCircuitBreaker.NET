@@ -1,4 +1,5 @@
-﻿using System;
+﻿using CircuitBreaker.Core;
+using System;
 using Xunit;
 
 namespace CircuitBreaker.UnitTests
@@ -22,7 +23,7 @@ namespace CircuitBreaker.UnitTests
             var sut = new ProportionFailuresRule(threshold);
 
             //Act
-            var result = sut.ShouldOpenCircuitBreaker(healthCount);
+            var result = sut.ValidateRule(healthCount);
 
             //Assert
             Assert.Equal(expected, result);

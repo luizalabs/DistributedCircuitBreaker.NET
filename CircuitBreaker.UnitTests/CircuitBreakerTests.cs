@@ -1,3 +1,4 @@
+using CircuitBreaker.Core;
 using NSubstitute;
 using System;
 using System.Collections.Generic;
@@ -9,9 +10,9 @@ namespace CircuitBreaker.UnitTests
     public class CircuitBreakerTests
     {
         [Fact]
-        public void ExecuteAction_ShouldThrowExceptionAfterThresholdExceeded()
+        public void ExecuteAction_StateShouldBeOpenAfterNumberOfFailuresExceedsThreshold()
         {
-            //arrange
+            //Arrange
             string key = "testKey";
             int numberOfFailuresThreshold = 2;
             TimeSpan windowDuration = TimeSpan.FromSeconds(1000);
@@ -29,7 +30,7 @@ namespace CircuitBreaker.UnitTests
 
             int actualNumberOfFailures = 0;
 
-            //act
+            //Act
             for (int i = 1; i < numberOfFailuresThreshold + 3; i++)
             {
                 try
@@ -37,7 +38,7 @@ namespace CircuitBreaker.UnitTests
                     var cb = new CircuitBreaker(key, windowDuration, durationOfBreak, rules, repository);
                     cb.ExecuteAction(() => { throw new TimeoutException(); });
                 }
-                catch (BrokenCircuitException)
+                catch (BrokenCircuitException ex)
                 {
                     actualNumberOfFailures = i - 1;//i stores the actual trial 
                     break;
@@ -45,16 +46,16 @@ namespace CircuitBreaker.UnitTests
             }
 
             var cbf = new CircuitBreaker(key, windowDuration, durationOfBreak, rules, repository);
+
+            //Assert
             Assert.True(cbf.IsOpen());
             Assert.Equal(numberOfFailuresThreshold, actualNumberOfFailures);
         }
 
-
-
         [Fact]
-        public void ExecuteAction_ShouldThrowExceptionAfterThresholdExceededs()
+        public void ExecuteAction_StateShouldBeClosedAfterDurationOfBreak()
         {
-            //arrange
+            //Arrange
             string key = "testKey";
             int numberOfFailuresThreshold = 2;
             TimeSpan windowDuration = TimeSpan.FromSeconds(1000);
@@ -72,7 +73,7 @@ namespace CircuitBreaker.UnitTests
 
             int actualNumberOfFailures = 0;
 
-            //act
+            //Act
             for (int i = 1; i <= numberOfFailuresThreshold +1; i++)
             {
                 try
@@ -92,11 +93,61 @@ namespace CircuitBreaker.UnitTests
             Assert.Equal(numberOfFailuresThreshold, actualNumberOfFailures);
 
             Thread.Sleep(durationOfBreak);
+            dic.Clear();
 
             var cbClosed = new CircuitBreaker(key, windowDuration, durationOfBreak, rules, repository);
             cbClosed.ExecuteAction(() => { throw new TimeoutException(); });
+            //Assert
             Assert.False(cbClosed.IsOpen());
+        }
 
+
+        [Fact]
+        public void ShouldThrowExceptionWhenInstantiatePassingEmptyRuleList()
+        {
+            //Arrange
+            string key = "testKey";
+            TimeSpan windowDuration = TimeSpan.FromSeconds(1000);
+            TimeSpan durationOfBreak = TimeSpan.FromSeconds(15);
+            IRepository repository = Substitute.For<IRepository>();
+            List<IRule> rules = new List<IRule>();
+
+            //Act
+            Action act = () => new CircuitBreaker(key, windowDuration, durationOfBreak, rules, repository);
+
+            //Assert
+            Assert.Throws<ArgumentException>(act);
+        }
+
+        [Fact]
+        public void ShouldThrowExceptionWhenInstantiateWithNoKey()
+        {
+            //Arrange
+            TimeSpan windowDuration = TimeSpan.FromSeconds(1000);
+            TimeSpan durationOfBreak = TimeSpan.FromSeconds(15);
+            IRepository repository = Substitute.For<IRepository>();
+            List<IRule> rules = new List<IRule>();
+
+            //Act
+            Action act = () => new CircuitBreaker(string.Empty, windowDuration, durationOfBreak, rules, repository);
+
+            //Assert
+            Assert.Throws<ArgumentException>(act);
+        }
+
+        [Fact]
+        public void ShouldThrowExceptionWhenInstantiateWithoutRepository()
+        {
+            //Arrange
+            TimeSpan windowDuration = TimeSpan.FromSeconds(1000);
+            TimeSpan durationOfBreak = TimeSpan.FromSeconds(15);
+            List<IRule> rules = new List<IRule>();
+
+            //Act
+            Action act = () => new CircuitBreaker("http://www.contoso.com", windowDuration, durationOfBreak, rules, null);
+
+            //Assert
+            Assert.Throws<ArgumentException>(act);
         }
 
         private static void SetRepositoryBehavior(string key, IRepository repository, Dictionary<string,byte[]> dic)
@@ -121,6 +172,14 @@ namespace CircuitBreaker.UnitTests
                 dic[keyDic] = arr;
             });
 
+            repository.WhenForAnyArgs(r => r.Set(key, new byte[1], TimeSpan.FromSeconds(0))).Do(p =>
+            {
+                var arr = p.Arg<byte[]>();
+                var s = BitConverter.ToString(arr);
+                var keyDic = p.Arg<string>();
+                dic[keyDic] = arr;
+            });
+
             repository.WhenForAnyArgs(r => r.Increment(key)).Do(p =>
             {
                 var keyDic = p.Arg<string>();
@@ -129,7 +188,5 @@ namespace CircuitBreaker.UnitTests
                 dic[keyDic] = BitConverter.GetBytes(i);
             });
         }
-
-
     }
 }
