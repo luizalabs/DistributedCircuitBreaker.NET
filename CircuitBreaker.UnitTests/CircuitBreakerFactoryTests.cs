@@ -1,13 +1,12 @@
 ﻿using CircuitBreaker.Core;
 using Microsoft.Extensions.DependencyInjection;
-using NSubstitute;
 using System;
 using System.Collections.Generic;
 using Xunit;
 
 namespace CircuitBreaker.UnitTests
 {
-    public class CircuitBreakerBuilderTests
+    public class CircuitBreakerFactoryTests
     {
 
         [Fact]
@@ -15,9 +14,6 @@ namespace CircuitBreaker.UnitTests
         {
             //Arrange
             string key = "testKey";
-            TimeSpan windowDuration = TimeSpan.FromSeconds(1000);
-            TimeSpan durationOfBreak = TimeSpan.FromSeconds(15);
-            IRepository repository = Substitute.For<IRepository>();
             List<IRule> rules = new List<IRule>();
             var circuitBreakerFactory = ServiceProviderFactory.ServiceProvider.GetService<ICircuitBreakerFactory>();
 
@@ -32,9 +28,6 @@ namespace CircuitBreaker.UnitTests
         public void ShouldThrowExceptionWhenInstantiateWithNoKey()
         {
             //Arrange
-            TimeSpan windowDuration = TimeSpan.FromSeconds(1000);
-            TimeSpan durationOfBreak = TimeSpan.FromSeconds(15);
-            IRepository repository = Substitute.For<IRepository>();
             List<IRule> rules = new List<IRule>();
             var circuitBreakerFactory = ServiceProviderFactory.ServiceProvider.GetService<ICircuitBreakerFactory>();
 
@@ -45,20 +38,18 @@ namespace CircuitBreaker.UnitTests
             Assert.Throws<ArgumentException>(act);
         }
 
-        //[Fact]
-        //public void ShouldThrowExceptionWhenInstantiateWithoutRepository()
-        //{
-        //    //Arrange
-        //    TimeSpan windowDuration = TimeSpan.FromSeconds(1000);
-        //    TimeSpan durationOfBreak = TimeSpan.FromSeconds(15);
-        //    List<IRule> rules = new List<IRule>();
-        //    var CircuitBreakerFactory = ServiceProviderFactory.ServiceProvider.GetService<ICircuitBreakerFactory>();
+        [Fact]
+        public void ShouldCreateNotNullCircuitBreakerWhenArgumentsAreValid()
+        {
+            //Arrange
+            List<IRule> rules = new List<IRule>();
+            rules.Add(new FixedNumberOfFailuresRule(2));
+            var circuitBreakerFactory = ServiceProviderFactory.ServiceProvider.GetService<ICircuitBreakerFactory>();
 
-        //    //Act
-        //    Action act = () => CircuitBreakerFactory.Create("http://www.contoso.com", rules);
-
-        //    //Assert
-        //    Assert.Throws<ArgumentException>(act);
-        //}
+            //Act
+            var cb = circuitBreakerFactory.Create("http://www.contoso.com", rules);
+            //Assert
+            Assert.NotNull(cb);
+        }
     }
 }

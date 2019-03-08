@@ -1,61 +1,29 @@
+using CircuitBreaker.Core;
+using CircuitBreaker.Repository;
 using NSubstitute;
-using System;
-using System.Collections.Generic;
+using Microsoft.Extensions.DependencyInjection;
+using Xunit;
 
 namespace CircuitBreaker.UnitTests
 {
     public class HealthCountServiceTests
     {
-        //[Fact]
-        //public void ExecuteAction_ShouldGenerateClearHealthCount()
-        //{
-        //    //arrange
-        //    string key = "testKey";
-        //    IRepository repository = Substitute.For<IRepository>();
-        //    Dictionary<string, byte[]> dic = new Dictionary<string, byte[]>();
-        //    SetRepositoryBehavior(key, repository, dic);
+        [Fact]
+        public void ExecuteAction_ShouldGenerateClearHealthCount()
+        {
+            //arrange
+            string key = "testKey";
+            ICircuitBreakRepository repository = Substitute.For<ICircuitBreakRepository>();
+            var service = ServiceProviderFactory.ServiceProvider.GetService<IHealthCountService>();
+            var keys = new CircuitBreakerKeys(key);
 
-        //    //act
-        //    long now = DateTime.UtcNow.Ticks;
-        //    HealthCount generated = new HealthCountService(repository, 0,0).GenerateNewHealthCounter(key);
+            //act
+            service.IncrementFailure(keys);
 
-        //    HealthCount n = new HealthCount()
-        //    {
-        //        Failures = 0,
-        //        Successes = 0,
-        //       // StartedAt = now
-        //    };
+            var repo = ServiceProviderFactory.ServiceProvider.GetService<IRepository>();
 
-        //    //Assert
-        //    Assert.Equal(n.Successes, generated.Successes);
-        //    Assert.Equal(n.Failures, generated.Failures);
-        //    //Assert.Equal(new DateTime( n.StartedAt).ToShortDateString(), new DateTime( generated.StartedAt).ToShortDateString());
-        //}
-
-        //[Fact]
-        //public void ExecuteAction_ShouldGenerateClearHealthCount()
-        //{
-        //    //arrange
-        //    string key = "testKey";
-        //    IRepository repository = Substitute.For<IRepository>();
-        //    Dictionary<string, byte[]> dic = new Dictionary<string, byte[]>();
-        //    SetRepositoryBehavior(key, repository, dic);
-
-        //    //act
-        //    long now = DateTime.UtcNow.Ticks;
-        //    HealthCount generated = new HealthCountService(repository, 0, 0).GenerateNewHealthCounter(key);
-
-        //    HealthCount n = new HealthCount()
-        //    {
-        //        Failures = 0,
-        //        Successes = 0,
-        //        // StartedAt = now
-        //    };
-
-        //    //Assert
-        //    Assert.Equal(n.Successes, generated.Successes);
-        //    Assert.Equal(n.Failures, generated.Failures);
-        //    //Assert.Equal(new DateTime( n.StartedAt).ToShortDateString(), new DateTime( generated.StartedAt).ToShortDateString());
-        //}
+            var fail = repo.GetString(keys.FailureCountKey);
+            //Assert
+        }
     }
 }

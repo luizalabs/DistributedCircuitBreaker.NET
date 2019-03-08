@@ -1,4 +1,6 @@
-﻿using CircuitBreaker.Repository;
+﻿using CircuitBreaker.DependencyInjection;
+using CircuitBreaker.Repository;
+using Microsoft.Extensions.Options;
 using System;
 
 namespace CircuitBreaker.Core
@@ -8,61 +10,49 @@ namespace CircuitBreaker.Core
         ICircuitBreakRepository _circuitBreakRepository;
         TimeSpan _windowDuration;
         private TimeSpan _durationOfBreak;
-        const string SuccessCountKeySuffix = "-success";
-        const string FailureCountKeySuffix = "-failure";
-        const string StateKeySuffix = "-state";
-        private readonly string _successCountKey;
-        private readonly string _failureCountKey;
-        private readonly string _stateKey;
 
-        public HealthCountService(string key, IRepository repository, TimeSpan windowDuration, TimeSpan durationOfBreak) 
+        public HealthCountService(IOptions<CircuitBreakerFactoryOptions> options, ICircuitBreakRepository circuitBreakRepository)
         {
-            _circuitBreakRepository = new CircuitBreakRepository(repository);
-            _windowDuration = windowDuration;
-            _durationOfBreak = durationOfBreak;
-            _successCountKey = key + SuccessCountKeySuffix;
-            _failureCountKey = key + FailureCountKeySuffix;
-            _stateKey = key + StateKeySuffix;
+            _circuitBreakRepository = circuitBreakRepository;
+            _windowDuration = options.Value.WindowDuration;
+            _durationOfBreak = options.Value.DurationOfBreak;
         }
 
-        public HealthCount GetCurrentHealthCount()
+        public HealthCount GetCurrentHealthCount(CircuitBreakerKeys keys)
         {
             return new HealthCount()
             {
-                Successes = _circuitBreakRepository.GetInt32(_successCountKey),  
-                Failures = _circuitBreakRepository.GetInt32(_failureCountKey) 
+                Successes = _circuitBreakRepository.GetInt32(keys.SuccessCountKey),  
+                Failures = _circuitBreakRepository.GetInt32(keys.FailureCountKey) 
             };        
         }
 
-        public void IncrementSuccess()
+        public void IncrementSuccess(CircuitBreakerKeys keys)
         {
-            var keyExists = _circuitBreakRepository.KeyExists(_successCountKey);
+            var keyExists = _circuitBreakRepository.KeyExists(keys.SuccessCountKey);
             if (!keyExists)
-                _circuitBreakRepository.SetInt32(_successCountKey, 0, _windowDuration);
+                _circuitBreakRepository.SetInt32(keys.SuccessCountKey, 0, _windowDuration);
 
-            _circuitBreakRepository.Increment(_successCountKey);
+            _circuitBreakRepository.Increment(keys.SuccessCountKey);
         }
 
-        public void IncrementFailure()
+        public void IncrementFailure(CircuitBreakerKeys keys)
         {
-            var keyExists = _circuitBreakRepository.KeyExists(_failureCountKey);
+            var keyExists = _circuitBreakRepository.KeyExists(keys.FailureCountKey);
             if (!keyExists)
-                _circuitBreakRepository.SetInt32(_failureCountKey, 0, _windowDuration);
+                _circuitBreakRepository.SetInt32(keys.FailureCountKey, 0, _windowDuration);
 
-            _circuitBreakRepository.Increment(_failureCountKey);
+            _circuitBreakRepository.Increment(keys.FailureCountKey);
         }
 
-        /// <summary>
-        /// 
-        /// </summary>
-        public void OpenCircuit()
+        public void OpenCircuit(CircuitBreakerKeys keys)
         {
-            _circuitBreakRepository.SetInt32(_stateKey, (int)CircuitState.Open, _durationOfBreak);
+            _circuitBreakRepository.SetInt32(keys.StateKey, (int)CircuitState.Open, _durationOfBreak);
         }
 
-        public CircuitState GetState()
+        public CircuitState GetState(CircuitBreakerKeys keys)
         {
-            var keyExists = _circuitBreakRepository.KeyExists(_stateKey);
+            var keyExists = _circuitBreakRepository.KeyExists(keys.StateKey);
 
             if (keyExists)
                 return CircuitState.Open;

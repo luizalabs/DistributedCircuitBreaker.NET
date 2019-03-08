@@ -1,4 +1,5 @@
 ﻿using CircuitBreaker.Core;
+using System;
 
 namespace CircuitBreaker
 {
@@ -12,6 +13,8 @@ namespace CircuitBreaker
         /// <param name="_failuresThreshold">The failures number that should cause the CB to be Open</param>
         public FixedNumberOfFailuresRule(int exceptionsAllowedBeforeBreaking)
         {
+            if(exceptionsAllowedBeforeBreaking <= 0)
+                throw new ArgumentException("Number of failures before break must be positive");
             _exceptionsAllowedBeforeBreaking = exceptionsAllowedBeforeBreaking;
         }
 

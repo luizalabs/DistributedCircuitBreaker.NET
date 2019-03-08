@@ -1,13 +1,18 @@
-﻿using System;
+﻿using CircuitBreaker.DependencyInjection;
+using Microsoft.Extensions.Options;
+using System;
 
 namespace CircuitBreaker.Repository
 {
     public class CircuitBreakRepository : ICircuitBreakRepository
     {
         protected IRepository _repository;
-        public CircuitBreakRepository(IRepository repository)
+        public CircuitBreakRepository(IOptions<CircuitBreakerFactoryOptions> options)
         {
-            _repository = repository;
+            if (options?.Value?.Repository == null)
+                throw new ArgumentException("Repository must be configured");
+
+            _repository = options.Value.Repository;
         }
 
         /// <summary>

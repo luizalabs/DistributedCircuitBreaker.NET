@@ -1,13 +1,11 @@
-﻿using System;
-
-namespace CircuitBreaker.Core
+﻿namespace CircuitBreaker.Core
 {
     public interface IHealthCountService
     {
-        HealthCount GetCurrentHealthCount();
-        CircuitState GetState();
-        void IncrementFailure();
-        void IncrementSuccess();
-        void OpenCircuit();
+        HealthCount GetCurrentHealthCount(CircuitBreakerKeys keys);
+        CircuitState GetState(CircuitBreakerKeys keys);
+        void IncrementFailure(CircuitBreakerKeys keys);
+        void IncrementSuccess(CircuitBreakerKeys keys);
+        void OpenCircuit(CircuitBreakerKeys keys);
     }
 }

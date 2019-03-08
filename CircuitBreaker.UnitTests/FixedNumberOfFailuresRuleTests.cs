@@ -30,5 +30,18 @@ namespace CircuitBreaker.UnitTests
             //Assert
             Assert.Equal(expected, result);
         }
+
+        [Theory]
+        [InlineData(0)]
+        [InlineData(-1)]
+        public void ShouldTHrowExceptionWhenThresholdIsConfiguredWithNonPositiveNumber(int threshold)
+        {
+            //Arrange
+            //Act
+            var act = new Func<FixedNumberOfFailuresRule>(()=> new FixedNumberOfFailuresRule(threshold));
+
+            //Assert
+            Assert.Throws<ArgumentException>(act);
+        }
     }
 }

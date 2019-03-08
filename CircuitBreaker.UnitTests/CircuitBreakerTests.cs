@@ -86,6 +86,22 @@ namespace CircuitBreaker.UnitTests
             Assert.False(cbClosed.IsOpen());
         }
 
+        [Fact]
+        public void ExecuteAction_StateShouldBeClosedWhenJustCreated()
+        {
+            //Arrange
+            string key = "testKey";
+            var circuitBreakerFactory = ServiceProviderFactory.ServiceProvider.GetService<ICircuitBreakerFactory>();
+            var repository = ServiceProviderFactory.ServiceProvider.GetService<IRepository>();
+            Dictionary<string, byte[]> dic = new Dictionary<string, byte[]>();
+            ServiceProviderFactory.SetRepositoryBehavior(key, repository, dic);
+            var cbClosed = circuitBreakerFactory.Create(key, 2);
+
+            //Act
+
+            //Assert
+            Assert.False(cbClosed.IsOpen());
+        }
 
     }
 }

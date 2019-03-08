@@ -5,35 +5,38 @@ using System.Linq;
 
 namespace CircuitBreaker
 {
+    /// <summary>
+    /// Responsible for controlling the circuit Break, validate if the rules are broken
+    /// </summary>
     public class CircuitBreaker
     {
         private List<IRule> _rules;
         private HealthCount _healthCount ;
         private Exception _lastException;
         private IHealthCountService _healthCountService;
+        private CircuitBreakerKeys _keys;
 
         /// <summary>
         /// Initializes an instance of CircuitBreaker
         /// </summary>
         /// <param name="key">The Key that defines a unique unit to be controlled by circuit breaker. E.g. a URI.</param>
-        /// <param name="windowDuration">The amount of time considered to count failures</param>
-        /// <param name="durationOfBreak">The amount of time the circuit should be open after changed to an open state</param>
         /// <param name="rules">Rules to be evaluated to decide if the state should be set to OPEN</param>
-        /// <param name="repository">The repository that is used to store the CB information</param>
-        internal CircuitBreaker(string key, TimeSpan windowDuration, TimeSpan durationOfBreak, List<IRule> rules, IRepository repository)
+        /// <param name="service">service that deal with the persistance of the information</param>
+        internal CircuitBreaker(string key, List<IRule> rules, IHealthCountService service)
         {
             _rules = rules;
-            _healthCountService = new HealthCountService(key, repository, windowDuration, durationOfBreak);
+            _keys = new CircuitBreakerKeys(key);
+            _healthCountService = service;
         }
 
         public CircuitState State
         {
-            get { return _healthCountService.GetState(); }
+            get { return _healthCountService.GetState(_keys); }
         }
 
-        private void SetCurrentHealthCount()
+        private void RetrieveCurrentHealthCount()
         {
-            _healthCount = _healthCountService.GetCurrentHealthCount();            
+            _healthCount = _healthCountService.GetCurrentHealthCount(_keys);            
         }
 
         /// <summary>
@@ -56,19 +59,19 @@ namespace CircuitBreaker
 
         private void OpenCircuit()
         {
-            _healthCountService.OpenCircuit();
+            _healthCountService.OpenCircuit(_keys);
         }
 
         private void IncrementFailure()
         {
             _healthCount.Failures++;
-            _healthCountService.IncrementFailure();
+            _healthCountService.IncrementFailure(_keys);
         }
 
         private void IncrementSuccess()
         {
             _healthCount.Successes++;
-            _healthCountService.IncrementSuccess();
+            _healthCountService.IncrementSuccess(_keys);
         }
 
         private void ValidateCircuitStatus()
@@ -84,9 +87,15 @@ namespace CircuitBreaker
             }
         }
 
+        /// <summary>
+        ///  Warp the call to a function with the circuitbreaker
+        /// </summary>
+        /// <typeparam name="TResult"></typeparam>
+        /// <param name="action"></param>
+        /// <returns></returns>
         public TResult ExecuteAction<TResult>(Func<TResult> action)
         {
-            SetCurrentHealthCount();
+            RetrieveCurrentHealthCount();
             ValidateCircuitStatus();
 
             try
@@ -110,7 +119,7 @@ namespace CircuitBreaker
 
         public void ExecuteAction(Action action)
         {
-            SetCurrentHealthCount();
+            RetrieveCurrentHealthCount();
             ValidateCircuitStatus();
             try
             {

@@ -7,18 +7,11 @@ namespace CircuitBreaker.Core
 {
     public class CircuitBreakerFactory : ICircuitBreakerFactory
     {
-        private TimeSpan _windowDuration;
-        private TimeSpan _durationOfBreak;
-        private IRepository _repository;
+        private IHealthCountService _service;
 
-        public CircuitBreakerFactory(IOptions<CircuitBreakerFactoryOptions> options)
+        public CircuitBreakerFactory(IHealthCountService service)
         {
-            _windowDuration = options.Value.WindowDuration == null ? TimeSpan.FromSeconds(1) : options.Value.WindowDuration;
-            _durationOfBreak = options.Value.DurationOfBreak == null ? TimeSpan.FromSeconds(5) : options.Value.DurationOfBreak;
-            _repository = options.Value.Repository;
-
-            if (_repository == null)
-                throw new ArgumentException("Repository could not be null");
+            _service = service;
         }
 
         /// <summary>
@@ -38,7 +31,7 @@ namespace CircuitBreaker.Core
             if (rules == null || rules.Count == 0)
                 throw new ArgumentException("At least one rule must be provided");
 
-            return new CircuitBreaker(key, _windowDuration, _durationOfBreak, rules, _repository);
+            return new CircuitBreaker(key, rules, _service);
         }
 
         /// <summary>

@@ -23,13 +23,13 @@ namespace CircuitBreaker.DependencyInjection
 
         }
 
-        public static IServiceCollection AddDistributedCircuitBreaker(this IServiceCollection collection)
-        {
-            if (collection == null) throw new ArgumentNullException(nameof(collection));
-            collection.AddTransient<IHealthCountService, HealthCountService>();
-            collection.AddTransient<ICircuitBreakRepository, CircuitBreakRepository>();
+        //public static IServiceCollection AddDistributedCircuitBreaker(this IServiceCollection collection)
+        //{
+        //    if (collection == null) throw new ArgumentNullException(nameof(collection));
+        //    collection.AddTransient<IHealthCountService, HealthCountService>();
+        //    collection.AddTransient<ICircuitBreakRepository, CircuitBreakRepository>();
 
-            return collection;
-        }
+        //    return collection;
+        //}
     }
 }
