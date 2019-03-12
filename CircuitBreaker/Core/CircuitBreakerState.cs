@@ -1,4 +1,4 @@
-﻿namespace CircuitBreaker.Core
+﻿namespace DistributedCircuitBreaker.Core
 {
     /// <summary>
     /// Describes the possible states the circuit of a CircuitBreaker may be in.

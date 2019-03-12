@@ -1,10 +1,10 @@
-﻿using CircuitBreaker.DependencyInjection;
+﻿using DistributedCircuitBreaker.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection;
 using NSubstitute;
 using System;
 using System.Collections.Generic;
 
-namespace CircuitBreaker.UnitTests
+namespace DistributedCircuitBreaker.UnitTests
 {
     public static class ServiceProviderFactory
     {
@@ -18,22 +18,21 @@ namespace CircuitBreaker.UnitTests
         private static IServiceProvider BuildServiceProvider()
         {
             var services = new ServiceCollection();
-            TimeSpan windowDuration = TimeSpan.FromSeconds(1000);
-            TimeSpan durationOfBreak = TimeSpan.FromSeconds(15);
-            IRepository repository = Substitute.For<IRepository>();
+            TimeSpan windowDuration = TimeSpan.FromSeconds(60);
+            TimeSpan durationOfBreak = TimeSpan.FromSeconds(10);
+            IDistributedCircuitBreakerRepository repository = Substitute.For<IDistributedCircuitBreakerRepository>();
             services.AddDistributedCircuitBreaker(options =>
             {
                 options.DurationOfBreak = durationOfBreak;
                 options.WindowDuration = windowDuration;
-                options.Repository = repository;
             });
 
-            services.AddTransient(typeof(IRepository),serviceProvider => repository);
+            services.AddTransient(typeof(IDistributedCircuitBreakerRepository), serviceProvider => repository);
 
             return services.BuildServiceProvider();
         }
 
-        public static void SetRepositoryBehavior(string key, IRepository repository, Dictionary<string, byte[]> dic)
+        public static void SetRepositoryBehavior(string key, IDistributedCircuitBreakerRepository repository, Dictionary<string, string> dic)
         {
             repository.GetString(key).ReturnsForAnyArgs(x => {
                 var keyDic = x.Arg<string>();
@@ -41,34 +40,29 @@ namespace CircuitBreaker.UnitTests
                 if (!dic.ContainsKey(keyDic))
                     return null;
 
-                if (dic[keyDic].GetLength(0) <= 4)
-                    return BitConverter.ToInt32(dic[keyDic]).ToString();
-                else
-                    return BitConverter.ToInt64(dic[keyDic]).ToString();
+                return dic[keyDic];
             });
 
-            repository.WhenForAnyArgs(r => r.Set(key, new byte[1])).Do(p =>
+            repository.WhenForAnyArgs(r => r.Set(key, 0)).Do(p =>
             {
-                var arr = p.Arg<byte[]>();
-                var s = BitConverter.ToString(arr);
+                var value = p.Arg<int>();
                 var keyDic = p.Arg<string>();
-                dic[keyDic] = arr;
+                dic[keyDic] = value.ToString();
             });
 
-            repository.WhenForAnyArgs(r => r.Set(key, new byte[1], TimeSpan.FromSeconds(0))).Do(p =>
+            repository.WhenForAnyArgs(r => r.Set(key, 0, TimeSpan.FromSeconds(0))).Do(p =>
             {
-                var arr = p.Arg<byte[]>();
-                var s = BitConverter.ToString(arr);
+                var value = p.Arg<int>();
                 var keyDic = p.Arg<string>();
-                dic[keyDic] = arr;
+                dic[keyDic] = value.ToString();
             });
 
             repository.WhenForAnyArgs(r => r.Increment(key)).Do(p =>
             {
                 var keyDic = p.Arg<string>();
-                int i = BitConverter.ToInt32(dic[keyDic]);
+                int i = int.Parse(dic[keyDic]);
                 i++;
-                dic[keyDic] = BitConverter.GetBytes(i);
+                dic[keyDic] = i.ToString();
             });
         }
     }

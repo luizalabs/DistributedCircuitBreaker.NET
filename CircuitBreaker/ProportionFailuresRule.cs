@@ -1,6 +1,6 @@
-﻿using CircuitBreaker.Core;
+﻿using DistributedCircuitBreaker.Core;
 
-namespace CircuitBreaker
+namespace DistributedCircuitBreaker
 {
     public class ProportionFailuresRule : IRule
     {

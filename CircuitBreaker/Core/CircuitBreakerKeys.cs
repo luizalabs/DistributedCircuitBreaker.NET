@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace CircuitBreaker.Core
+namespace DistributedCircuitBreaker.Core
 {
     public class CircuitBreakerKeys
     {

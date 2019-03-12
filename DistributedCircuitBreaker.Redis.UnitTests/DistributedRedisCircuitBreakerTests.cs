@@ -6,9 +6,10 @@ using System.Threading;
 using Xunit;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace DistributedCircuitBreaker.UnitTests
+
+namespace DistributedCircuitBreaker.Redis.IntegratedTests
 {
-    public class CircuitBreakerTests
+    public class DistributedRedisCircuitBreakerTests
     {
         [Fact]
         public void ExecuteAction_StateShouldBeOpenAfterNumberOfFailuresExceedsThreshold()
@@ -17,9 +18,6 @@ namespace DistributedCircuitBreaker.UnitTests
             string key = "testKey";
             int numberOfFailuresThreshold = 2;
             var circuitBreakerFactory = ServiceProviderFactory.ServiceProvider.GetService<ICircuitBreakerFactory>();
-            var repository = ServiceProviderFactory.ServiceProvider.GetService<IDistributedCircuitBreakerRepository>();
-            Dictionary<string, string> dic = new Dictionary<string, string>();
-            ServiceProviderFactory.SetRepositoryBehavior(key, repository, dic);
 
             int actualNumberOfFailures = 0;
 
@@ -43,6 +41,17 @@ namespace DistributedCircuitBreaker.UnitTests
             //Assert
             Assert.True(cbf.IsOpen());
             Assert.Equal(numberOfFailuresThreshold, actualNumberOfFailures);
+
+            ClearRepositoryKeys(key);
+        }
+
+        private static void ClearRepositoryKeys(string key)
+        {
+            var repository = ServiceProviderFactory.ServiceProvider.GetService<IDistributedCircuitBreakerRepository>();
+            CircuitBreakerKeys keys = new CircuitBreakerKeys(key);
+            repository.Remove(keys.FailureCountKey);
+            repository.Remove(keys.SuccessCountKey);
+            repository.Remove(keys.StateKey);
         }
 
         [Fact]
@@ -52,14 +61,11 @@ namespace DistributedCircuitBreaker.UnitTests
             string key = "testKey";
             int numberOfFailuresThreshold = 2;
             var circuitBreakerFactory = ServiceProviderFactory.ServiceProvider.GetService<ICircuitBreakerFactory>();
-            var repository = ServiceProviderFactory.ServiceProvider.GetService<IDistributedCircuitBreakerRepository>();
-            Dictionary<string, string> dic = new Dictionary<string, string>();
-            ServiceProviderFactory.SetRepositoryBehavior(key, repository, dic);
 
             int actualNumberOfFailures = 0;
 
             //Act
-            for (int i = 1; i <= numberOfFailuresThreshold +1; i++)
+            for (int i = 1; i <= numberOfFailuresThreshold + 1; i++)
             {
                 try
                 {
@@ -77,8 +83,7 @@ namespace DistributedCircuitBreaker.UnitTests
             Assert.True(cbOpened.IsOpen());
             Assert.Equal(numberOfFailuresThreshold, actualNumberOfFailures);
 
-            Thread.Sleep(TimeSpan.FromSeconds(15));
-            dic.Clear();
+            Thread.Sleep(TimeSpan.FromSeconds(11));
 
             var cbClosed = circuitBreakerFactory.Create(key, numberOfFailuresThreshold);
             try
@@ -87,10 +92,11 @@ namespace DistributedCircuitBreaker.UnitTests
             }
             catch (BrokenCircuitException)
             {
-               
+
             }
             //Assert
             Assert.False(cbClosed.IsOpen());
+            ClearRepositoryKeys(key);
         }
 
         [Fact]
@@ -100,15 +106,14 @@ namespace DistributedCircuitBreaker.UnitTests
             string key = "testKey";
             var circuitBreakerFactory = ServiceProviderFactory.ServiceProvider.GetService<ICircuitBreakerFactory>();
             var repository = ServiceProviderFactory.ServiceProvider.GetService<IDistributedCircuitBreakerRepository>();
-            Dictionary<string, string> dic = new Dictionary<string, string>();
-            ServiceProviderFactory.SetRepositoryBehavior(key, repository, dic);
+            Dictionary<string, byte[]> dic = new Dictionary<string, byte[]>();
             var cbClosed = circuitBreakerFactory.Create(key, 2);
 
             //Act
 
             //Assert
             Assert.False(cbClosed.IsOpen());
+            ClearRepositoryKeys(key);
         }
-
     }
 }

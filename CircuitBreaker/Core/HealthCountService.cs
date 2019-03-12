@@ -1,9 +1,9 @@
-﻿using CircuitBreaker.DependencyInjection;
-using CircuitBreaker.Repository;
+﻿using DistributedCircuitBreaker.DependencyInjection;
+using DistributedCircuitBreaker.Repository;
 using Microsoft.Extensions.Options;
 using System;
 
-namespace CircuitBreaker.Core
+namespace DistributedCircuitBreaker.Core
 {
     public class HealthCountService : IHealthCountService
     {
@@ -48,6 +48,8 @@ namespace CircuitBreaker.Core
         public void OpenCircuit(CircuitBreakerKeys keys)
         {
             _circuitBreakRepository.SetInt32(keys.StateKey, (int)CircuitState.Open, _durationOfBreak);
+            _circuitBreakRepository.Remove(keys.FailureCountKey);
+            _circuitBreakRepository.Remove(keys.SuccessCountKey);
         }
 
         public CircuitState GetState(CircuitBreakerKeys keys)

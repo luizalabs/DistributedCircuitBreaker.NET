@@ -1,10 +1,10 @@
-﻿using CircuitBreaker.Core;
+﻿using DistributedCircuitBreaker.Core;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
 using Xunit;
 
-namespace CircuitBreaker.UnitTests
+namespace DistributedCircuitBreaker.UnitTests
 {
     public class CircuitBreakerFactoryTests
     {

@@ -2,12 +2,12 @@
 
 namespace DistributedCircuitBreaker.DependencyInjection
 {
-    public class CircuitBreakerFactoryOptions
+    public class CircuitBreakerRedisFactoryOptions
     {
         /// <summary>
-        /// The repository that is used to store the CircuitBreaker information
+        /// Redis database configuration string
         /// </summary>
-        public IDistributedCircuitBreakerRepository Repository { get; set; }
+        public string RedisConnectionConfiguration { get; set; }
         /// <summary>
         /// The amount of time considered to count failures
         /// </summary>

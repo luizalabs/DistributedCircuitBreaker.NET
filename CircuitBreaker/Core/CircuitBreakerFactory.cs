@@ -1,9 +1,9 @@
-﻿using CircuitBreaker.DependencyInjection;
+﻿using DistributedCircuitBreaker.DependencyInjection;
 using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
 
-namespace CircuitBreaker.Core
+namespace DistributedCircuitBreaker.Core
 {
     public class CircuitBreakerFactory : ICircuitBreakerFactory
     {

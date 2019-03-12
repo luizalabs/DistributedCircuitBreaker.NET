@@ -3,9 +3,13 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.28307.168
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CircuitBreaker", "CircuitBreaker\CircuitBreaker.csproj", "{FAB779BC-CDDB-4E88-A31B-6AADE237DB21}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DistributedCircuitBreaker", "CircuitBreaker\DistributedCircuitBreaker.csproj", "{FAB779BC-CDDB-4E88-A31B-6AADE237DB21}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CircuitBreaker.UnitTests", "CircuitBreaker.UnitTests\CircuitBreaker.UnitTests.csproj", "{320CF042-ABB0-417B-BF30-1F427A8F6698}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DistributedCircuitBreaker.UnitTests", "CircuitBreaker.UnitTests\DistributedCircuitBreaker.UnitTests.csproj", "{320CF042-ABB0-417B-BF30-1F427A8F6698}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DistributedCircuitbreaker.Redis", "DistributedCircuitbreaker.Redis\DistributedCircuitbreaker.Redis.csproj", "{DE68D48A-A682-49D8-91A0-9D81AEB5BEF4}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DistributedCircuitBreaker.Redis.IntegratedTests", "DistributedCircuitBreaker.Redis.UnitTests\DistributedCircuitBreaker.Redis.IntegratedTests.csproj", "{745C2C57-AABF-4D38-860D-6CD79B2ADD8D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,6 +25,14 @@ Global
 		{320CF042-ABB0-417B-BF30-1F427A8F6698}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{320CF042-ABB0-417B-BF30-1F427A8F6698}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{320CF042-ABB0-417B-BF30-1F427A8F6698}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DE68D48A-A682-49D8-91A0-9D81AEB5BEF4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DE68D48A-A682-49D8-91A0-9D81AEB5BEF4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DE68D48A-A682-49D8-91A0-9D81AEB5BEF4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DE68D48A-A682-49D8-91A0-9D81AEB5BEF4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{745C2C57-AABF-4D38-860D-6CD79B2ADD8D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{745C2C57-AABF-4D38-860D-6CD79B2ADD8D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{745C2C57-AABF-4D38-860D-6CD79B2ADD8D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{745C2C57-AABF-4D38-860D-6CD79B2ADD8D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

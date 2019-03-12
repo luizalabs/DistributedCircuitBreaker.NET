@@ -1,4 +1,4 @@
-﻿using CircuitBreaker.Core;
+﻿using DistributedCircuitBreaker.Core;
 using NSubstitute;
 using System;
 using System.Collections.Generic;
@@ -7,7 +7,7 @@ using Xunit;
 using Microsoft.Extensions.DependencyInjection;
 
 
-namespace CircuitBreaker.UnitTests
+namespace DistributedCircuitBreaker.UnitTests
 {
     public class CircuitBreakerKeysTests
     {

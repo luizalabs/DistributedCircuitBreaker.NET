@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Runtime.Serialization;
 using System.Text;
 
-namespace CircuitBreaker
+namespace DistributedCircuitBreaker
 {
     public abstract class ExecutionRejectedException : Exception
     {

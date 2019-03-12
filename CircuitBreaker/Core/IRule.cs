@@ -1,4 +1,4 @@
-﻿namespace CircuitBreaker.Core
+﻿namespace DistributedCircuitBreaker.Core
 {
     public interface IRule
     {

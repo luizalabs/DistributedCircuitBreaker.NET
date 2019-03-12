@@ -4,7 +4,7 @@ using System.Runtime.Serialization;
 using System.Runtime.Serialization;
 #endif
 
-namespace CircuitBreaker
+namespace DistributedCircuitBreaker
 {
 //#if NETSTANDARD2_0
 

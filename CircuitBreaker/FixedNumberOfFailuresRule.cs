@@ -1,7 +1,7 @@
-﻿using CircuitBreaker.Core;
+﻿using DistributedCircuitBreaker.Core;
 using System;
 
-namespace CircuitBreaker
+namespace DistributedCircuitBreaker
 {
     public class FixedNumberOfFailuresRule : IRule
     {

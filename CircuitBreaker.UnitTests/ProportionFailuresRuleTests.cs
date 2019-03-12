@@ -1,8 +1,8 @@
-﻿using CircuitBreaker.Core;
+﻿using DistributedCircuitBreaker.Core;
 using System;
 using Xunit;
 
-namespace CircuitBreaker.UnitTests
+namespace DistributedCircuitBreaker.UnitTests
 {
     public class ProportionFailuresRuleTests
     {

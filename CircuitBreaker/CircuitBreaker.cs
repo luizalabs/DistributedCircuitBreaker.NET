@@ -1,9 +1,9 @@
-﻿using CircuitBreaker.Core;
+﻿using DistributedCircuitBreaker.Core;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace CircuitBreaker
+namespace DistributedCircuitBreaker
 {
     /// <summary>
     /// Responsible for controlling the circuit Break, validate if the rules are broken

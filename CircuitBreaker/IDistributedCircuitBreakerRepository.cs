@@ -1,8 +1,8 @@
 ﻿using System;
 
-namespace CircuitBreaker
+namespace DistributedCircuitBreaker
 {
-    public interface IRepository
+    public interface IDistributedCircuitBreakerRepository
     {
         void Increment(string key);
         /// <summary>
@@ -10,12 +10,12 @@ namespace CircuitBreaker
         /// </summary>
         /// <param name="key">A string identifying the requested value.</param>
         /// <returns>The located value or null.</returns>
-        byte[] Get(string key);
-
         string GetString(string key);
 
-        void Set(string key, byte[] value);
+        void Set(string key, int value);
 
-        void Set(string key, byte[] value, TimeSpan absoluteExpiration);
+        void Set(string key, int value, TimeSpan absoluteExpiration);
+
+        void Remove(string key);
     }
 }
