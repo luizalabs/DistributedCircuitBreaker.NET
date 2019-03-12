@@ -31,6 +31,10 @@ namespace DistributedCircuitBreaker.UnitTests
                     var cb = circuitBreakerFactory.Create(key, numberOfFailuresThreshold);
                     cb.ExecuteAction(() => { throw new TimeoutException(); });
                 }
+                catch (TimeoutException)
+                {
+
+                }
                 catch (BrokenCircuitException ex)
                 {
                     actualNumberOfFailures = i - 1;//i stores the actual trial 
@@ -66,6 +70,10 @@ namespace DistributedCircuitBreaker.UnitTests
                     var cb = circuitBreakerFactory.Create(key, numberOfFailuresThreshold);
                     cb.ExecuteAction(() => { throw new TimeoutException(); });
                 }
+                catch(TimeoutException)
+                {
+
+                }
                 catch (BrokenCircuitException)
                 {
                     actualNumberOfFailures = i - 1;//i stores the actual trial 
@@ -84,6 +92,10 @@ namespace DistributedCircuitBreaker.UnitTests
             try
             {
                 cbClosed.ExecuteAction(() => { throw new TimeoutException(); });
+            }
+            catch (TimeoutException)
+            {
+
             }
             catch (BrokenCircuitException)
             {
@@ -108,6 +120,63 @@ namespace DistributedCircuitBreaker.UnitTests
 
             //Assert
             Assert.False(cbClosed.IsOpen());
+        }
+
+        [Fact]
+        public void ExecuteAction_ShouldPropagateExceptionWhenActionThrowsException()
+        {
+            //Arrange
+            string key = "testKey";
+            int numberOfFailuresThreshold = 2;
+            var circuitBreakerFactory = ServiceProviderFactory.ServiceProvider.GetService<ICircuitBreakerFactory>();
+            var repository = ServiceProviderFactory.ServiceProvider.GetService<IDistributedCircuitBreakerRepository>();
+            Dictionary<string, string> dic = new Dictionary<string, string>();
+            ServiceProviderFactory.SetRepositoryBehavior(key, repository, dic);
+
+            bool exceptionExpectedWasThrown = false;
+            try
+            {
+                var cb = circuitBreakerFactory.Create(key, numberOfFailuresThreshold);
+                cb.ExecuteAction(() => { throw new TimeoutException(); });
+            }
+            catch (TimeoutException)
+            {
+                exceptionExpectedWasThrown = true;
+            }
+            catch (BrokenCircuitException ex)
+            {
+
+            }
+            Assert.True(exceptionExpectedWasThrown);
+        }
+
+
+        [Fact]
+        public void ExecuteAction_ShouldPropagateExceptionWhenFunctionThrowsException()
+        {
+            //Arrange
+            string key = "testKey";
+            int numberOfFailuresThreshold = 2;
+            var circuitBreakerFactory = ServiceProviderFactory.ServiceProvider.GetService<ICircuitBreakerFactory>();
+            var repository = ServiceProviderFactory.ServiceProvider.GetService<IDistributedCircuitBreakerRepository>();
+            Dictionary<string, string> dic = new Dictionary<string, string>();
+            ServiceProviderFactory.SetRepositoryBehavior(key, repository, dic);
+
+            bool exceptionExpectedWasThrown = false;
+            try
+            {
+                var cb = circuitBreakerFactory.Create(key, numberOfFailuresThreshold);
+                cb.ExecuteAction<int>(() => { throw new TimeoutException();  });
+            }
+            catch (TimeoutException)
+            {
+                exceptionExpectedWasThrown = true;
+            }
+            catch (BrokenCircuitException ex)
+            {
+
+            }
+            Assert.True(exceptionExpectedWasThrown);
         }
 
     }

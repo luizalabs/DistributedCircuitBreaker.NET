@@ -2,16 +2,19 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
+    <PackageId>DistributedCircuitbreaker.Redis.Test</PackageId>
+    <Authors>Luizalabs</Authors>
+    <Company>Luizalabs</Company>
+    <Product>DistributedCircuitbreaker.Redis</Product>
+    <Description>DistributedCiscuitBreaker.Redis is an implementation of IDistributedCircuitBreakerRepository using Redis</Description>
+    <Version>1.0.1</Version>
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="DistributedCircuitBreakerTest" Version="1.0.3" />
     <PackageReference Include="Microsoft.Extensions.Caching.Redis" Version="2.1.2" />
     <PackageReference Include="Microsoft.Extensions.Configuration" Version="2.1.1" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="2.1.1" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\CircuitBreaker\DistributedCircuitBreaker.csproj" />
   </ItemGroup>
 
 </Project>

@@ -135,6 +135,7 @@ namespace DistributedCircuitBreaker
                     OpenCircuit();
                     throw new BrokenCircuitException("The circuit is now open and is not allowing calls.", _lastException);
                 }
+                throw ex;
             }
         }
     }

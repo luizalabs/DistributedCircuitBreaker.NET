@@ -9,13 +9,14 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace DistributedCircuitBreaker.Redis.IntegratedTests
 {
-    public class DistributedRedisCircuitBreakerTests
-    {
+    public class DistributedRedisCircuitBreakerTests : IDisposable
+    {            
+        private string key = "testKey";
+
         [Fact]
         public void ExecuteAction_StateShouldBeOpenAfterNumberOfFailuresExceedsThreshold()
         {
             //Arrange
-            string key = "testKey";
             int numberOfFailuresThreshold = 2;
             var circuitBreakerFactory = ServiceProviderFactory.ServiceProvider.GetService<ICircuitBreakerFactory>();
 
@@ -29,7 +30,8 @@ namespace DistributedCircuitBreaker.Redis.IntegratedTests
                     var cb = circuitBreakerFactory.Create(key, numberOfFailuresThreshold);
                     cb.ExecuteAction(() => { throw new TimeoutException(); });
                 }
-                catch (BrokenCircuitException ex)
+                catch (TimeoutException) { }
+                catch (BrokenCircuitException)
                 {
                     actualNumberOfFailures = i - 1;//i stores the actual trial 
                     break;
@@ -41,7 +43,6 @@ namespace DistributedCircuitBreaker.Redis.IntegratedTests
             //Assert
             Assert.True(cbf.IsOpen());
             Assert.Equal(numberOfFailuresThreshold, actualNumberOfFailures);
-
             ClearRepositoryKeys(key);
         }
 
@@ -58,7 +59,6 @@ namespace DistributedCircuitBreaker.Redis.IntegratedTests
         public void ExecuteAction_StateShouldBeClosedAfterDurationOfBreak()
         {
             //Arrange
-            string key = "testKey";
             int numberOfFailuresThreshold = 2;
             var circuitBreakerFactory = ServiceProviderFactory.ServiceProvider.GetService<ICircuitBreakerFactory>();
 
@@ -72,6 +72,7 @@ namespace DistributedCircuitBreaker.Redis.IntegratedTests
                     var cb = circuitBreakerFactory.Create(key, numberOfFailuresThreshold);
                     cb.ExecuteAction(() => { throw new TimeoutException(); });
                 }
+                catch (TimeoutException) { }
                 catch (BrokenCircuitException)
                 {
                     actualNumberOfFailures = i - 1;//i stores the actual trial 
@@ -90,6 +91,7 @@ namespace DistributedCircuitBreaker.Redis.IntegratedTests
             {
                 cbClosed.ExecuteAction(() => { throw new TimeoutException(); });
             }
+            catch (TimeoutException) { }
             catch (BrokenCircuitException)
             {
 
@@ -103,7 +105,6 @@ namespace DistributedCircuitBreaker.Redis.IntegratedTests
         public void ExecuteAction_StateShouldBeClosedWhenJustCreated()
         {
             //Arrange
-            string key = "testKey";
             var circuitBreakerFactory = ServiceProviderFactory.ServiceProvider.GetService<ICircuitBreakerFactory>();
             var repository = ServiceProviderFactory.ServiceProvider.GetService<IDistributedCircuitBreakerRepository>();
             Dictionary<string, byte[]> dic = new Dictionary<string, byte[]>();
@@ -113,6 +114,35 @@ namespace DistributedCircuitBreaker.Redis.IntegratedTests
 
             //Assert
             Assert.False(cbClosed.IsOpen());
+        }
+
+        [Fact]
+        public void ExecuteAction_ShouldPropagateExceptionWhenFunctionThrowsException()
+        {
+            //Arrange
+            int numberOfFailuresThreshold = 2;
+            var circuitBreakerFactory = ServiceProviderFactory.ServiceProvider.GetService<ICircuitBreakerFactory>();
+
+            bool exceptionExpectedWasThrown = false;
+            try
+            {
+                var cb = circuitBreakerFactory.Create(key, numberOfFailuresThreshold);
+                cb.ExecuteAction<int>(() => { throw new TimeoutException(); });
+            }
+            catch (TimeoutException)
+            {
+                exceptionExpectedWasThrown = true;
+            }
+            catch (BrokenCircuitException ex)
+            {
+
+            }
+            Assert.True(exceptionExpectedWasThrown);
+            ClearRepositoryKeys(key);
+        }
+
+        public void Dispose()
+        {
             ClearRepositoryKeys(key);
         }
     }
