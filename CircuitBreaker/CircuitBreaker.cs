@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace DistributedCircuitBreaker
 {
@@ -106,13 +107,30 @@ namespace DistributedCircuitBreaker
             }
             catch (Exception ex)
             {
-                _lastException = ex;
-                IncrementFailure();
-                if (ShouldOpenCircuit())
+                HandleFailureExecution(ex);
+                throw ex;
+            }
+        }
+
+        public async Task<TResult> ExecuteActionAsync<TResult>(Func<Task<TResult>> action)
+        {
+            RetrieveCurrentHealthCount();
+            ValidateCircuitStatus();
+
+            try
+            {
+                var f = new Func<Task<TResult>>(async () =>
                 {
-                    OpenCircuit();
-                    throw new BrokenCircuitException("The circuit is now open and is not allowing calls.", _lastException);
-                }
+                    return await action();
+                });
+
+                TResult result = await f();
+                IncrementSuccess();
+                return result;
+            }
+            catch (Exception ex)
+            {
+                HandleFailureExecution(ex);
                 throw ex;
             }
         }
@@ -128,13 +146,38 @@ namespace DistributedCircuitBreaker
             }
             catch (Exception ex)
             {
-                _lastException = ex;
-                IncrementFailure();
-                if (ShouldOpenCircuit())
+                HandleFailureExecution(ex);
+                throw ex;
+            }
+        }
+
+        private void HandleFailureExecution(Exception ex)
+        {
+            IncrementFailure();
+            if (ShouldOpenCircuit())
+            {
+                OpenCircuit();
+                throw new BrokenCircuitException("The circuit is now open and is not allowing calls.", ex);
+            }
+        }
+
+        public async Task ExecuteActionAsync(Func<Task> action)
+        {
+            RetrieveCurrentHealthCount();
+            ValidateCircuitStatus();
+            try
+            {
+                var c = new Func<Task>(async() => 
                 {
-                    OpenCircuit();
-                    throw new BrokenCircuitException("The circuit is now open and is not allowing calls.", _lastException);
-                }
+                    await action();
+                });
+
+                await c();
+                IncrementSuccess();
+            }
+            catch (Exception ex)
+            {
+                HandleFailureExecution(ex);
                 throw ex;
             }
         }

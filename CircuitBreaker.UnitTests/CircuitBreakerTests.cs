@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Threading;
 using Xunit;
 using Microsoft.Extensions.DependencyInjection;
+using System.Threading.Tasks;
 
 namespace DistributedCircuitBreaker.UnitTests
 {
@@ -152,7 +153,7 @@ namespace DistributedCircuitBreaker.UnitTests
 
 
         [Fact]
-        public void ExecuteAction_ShouldPropagateExceptionWhenFunctionThrowsException()
+        public async void ExecuteAction_ShouldPropagateExceptionWhenAsyncFunctionThrowsExceptionAsync()
         {
             //Arrange
             string key = "testKey";
@@ -166,7 +167,14 @@ namespace DistributedCircuitBreaker.UnitTests
             try
             {
                 var cb = circuitBreakerFactory.Create(key, numberOfFailuresThreshold);
-                cb.ExecuteAction<int>(() => { throw new TimeoutException();  });
+
+                var funcTimeout = new Func<Task<int>>(async () =>
+                {
+                    await Task.Delay(1000);
+                    throw new TimeoutException();
+                });
+
+                var i = await cb.ExecuteActionAsync(() => funcTimeout());
             }
             catch (TimeoutException)
             {
@@ -177,6 +185,56 @@ namespace DistributedCircuitBreaker.UnitTests
 
             }
             Assert.True(exceptionExpectedWasThrown);
+
+            var keyChain = new CircuitBreakerKeys(key);
+
+            string failuresCount = repository.GetString(keyChain.FailureCountKey);
+            string successCount = repository.GetString(keyChain.SuccessCountKey);
+
+            Assert.True(failuresCount == "1");
+            Assert.True(successCount == "0" || string.IsNullOrEmpty(successCount));
+        }
+
+        [Fact]
+        public async void ExecuteAction_ShouldPropagateExceptionWhenAsyncActionThrowsExceptionAsync()
+        {
+            //Arrange
+            string key = "testKey";
+            int numberOfFailuresThreshold = 2;
+            var circuitBreakerFactory = ServiceProviderFactory.ServiceProvider.GetService<ICircuitBreakerFactory>();
+            var repository = ServiceProviderFactory.ServiceProvider.GetService<IDistributedCircuitBreakerRepository>();
+            Dictionary<string, string> dic = new Dictionary<string, string>();
+            ServiceProviderFactory.SetRepositoryBehavior(key, repository, dic);
+
+            bool exceptionExpectedWasThrown = false;
+            try
+            {
+                var cb = circuitBreakerFactory.Create(key, numberOfFailuresThreshold);
+
+                var funcTimeout = new Func<Task>(async () =>
+                {
+                    await Task.Delay(1000);
+                    throw new TimeoutException();
+                });
+                await cb.ExecuteActionAsync(() => funcTimeout());
+            }
+            catch (TimeoutException)
+            {
+                exceptionExpectedWasThrown = true;
+            }
+            catch (BrokenCircuitException ex)
+            {
+
+            }
+            Assert.True(exceptionExpectedWasThrown);
+
+            var keyChain = new CircuitBreakerKeys(key);
+
+            string failuresCount = repository.GetString(keyChain.FailureCountKey);
+            string successCount = repository.GetString(keyChain.SuccessCountKey);
+
+            Assert.True(failuresCount == "1");
+            Assert.True(successCount == "0" || string.IsNullOrEmpty(successCount));
         }
 
     }
