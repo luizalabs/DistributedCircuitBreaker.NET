@@ -8,10 +8,11 @@
     <PackageId>DistributedCircuitBreakerTest</PackageId>
     <Description>DistributedCiscuitBreaker is a .NET Library that allows developers to wrap execution of a task to be controlled by a circuit breaker.</Description>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <PackageLicenseUrl>http://www.contoso.com</PackageLicenseUrl>
+    <PackageLicenseUrl></PackageLicenseUrl>
     <AssemblyVersion>1.0.0.0</AssemblyVersion>
     <FileVersion>1.0.0.0</FileVersion>
     <Version>1.0.5</Version>
+    <PackageProjectUrl>https://github.com/luizalabs/DistributedCircuitBreaker.NET</PackageProjectUrl>
   </PropertyGroup>
 
   <ItemGroup>
