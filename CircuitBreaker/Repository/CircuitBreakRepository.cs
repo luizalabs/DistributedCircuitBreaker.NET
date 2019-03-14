@@ -2,7 +2,7 @@
 
 namespace DistributedCircuitBreaker.Repository
 {
-    public class CircuitBreakRepository : ICircuitBreakRepository
+    internal class CircuitBreakRepository : ICircuitBreakRepository
     {
         protected IDistributedCircuitBreakerRepository _repository;
         public CircuitBreakRepository(IDistributedCircuitBreakerRepository repository)

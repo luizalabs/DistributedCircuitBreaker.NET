@@ -5,7 +5,7 @@ using System;
 
 namespace DistributedCircuitBreaker.Core
 {
-    public class HealthCountService : IHealthCountService
+    internal class HealthCountService : IHealthCountService
     {
         ICircuitBreakRepository _circuitBreakRepository;
         TimeSpan _windowDuration;
