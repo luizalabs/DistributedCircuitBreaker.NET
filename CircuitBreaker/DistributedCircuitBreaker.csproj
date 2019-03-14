@@ -5,13 +5,13 @@
     <Company>Luizalabs</Company>
     <Product>DistributedCircuitBreaker</Product>
     <Authors>Luizalabs</Authors>
-    <PackageId>DistributedCircuitBreakerTest</PackageId>
+    <PackageId>DistributedCircuitBreaker</PackageId>
     <Description>DistributedCiscuitBreaker is a .NET Library that allows developers to wrap execution of a task to be controlled by a circuit breaker.</Description>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <PackageLicenseUrl></PackageLicenseUrl>
     <AssemblyVersion>1.0.0.0</AssemblyVersion>
     <FileVersion>1.0.0.0</FileVersion>
-    <Version>1.0.5</Version>
+    <Version>1.0.0</Version>
     <PackageProjectUrl>https://github.com/luizalabs/DistributedCircuitBreaker.NET</PackageProjectUrl>
   </PropertyGroup>
 
