@@ -19,6 +19,9 @@ namespace DistributedCircuitBreaker.Redis.DependencyInjection
             var redisOptions = new CircuitBreakerRedisFactoryOptions();
             setupAction(redisOptions);
 
+            if(redisOptions.RedisConnectionConfiguration == null)
+                throw new ArgumentNullException(nameof(redisOptions.RedisConnectionConfiguration));
+
             collection.AddDistributedRedisCache(options => options.Configuration = redisOptions.RedisConnectionConfiguration);
 
             collection.AddDistributedCircuitBreaker(options =>
