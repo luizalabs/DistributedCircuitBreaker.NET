@@ -1,5 +1,4 @@
 using DistributedCircuitBreaker.Core;
-using NSubstitute;
 using System;
 using System.Collections.Generic;
 using System.Threading;
@@ -108,9 +107,9 @@ namespace DistributedCircuitBreaker.Redis.IntegratedTests
             var circuitBreakerFactory = ServiceProviderFactory.ServiceProvider.GetService<ICircuitBreakerFactory>();
             var repository = ServiceProviderFactory.ServiceProvider.GetService<IDistributedCircuitBreakerRepository>();
             Dictionary<string, byte[]> dic = new Dictionary<string, byte[]>();
-            var cbClosed = circuitBreakerFactory.Create(key, 2);
 
             //Act
+            var cbClosed = circuitBreakerFactory.Create(key, 2);
 
             //Assert
             Assert.False(cbClosed.IsOpen());
