@@ -9,7 +9,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DistributedCircuitBreaker.U
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DistributedCircuitbreaker.Redis", "DistributedCircuitbreaker.Redis\DistributedCircuitbreaker.Redis.csproj", "{DE68D48A-A682-49D8-91A0-9D81AEB5BEF4}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DistributedCircuitBreaker.Redis.IntegratedTests", "DistributedCircuitBreaker.Redis.UnitTests\DistributedCircuitBreaker.Redis.IntegratedTests.csproj", "{745C2C57-AABF-4D38-860D-6CD79B2ADD8D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DistributedCircuitBreaker.Redis.IntegratedTests", "DistributedCircuitBreaker.Redis.IntegratedTests\DistributedCircuitBreaker.Redis.IntegratedTests.csproj", "{745C2C57-AABF-4D38-860D-6CD79B2ADD8D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DistributedCircuitBreaker.Redis.UnitTests", "DistributedCircuitBreaker.Redis.UnitTests\DistributedCircuitBreaker.Redis.UnitTests.csproj", "{1D688B96-AC58-42D9-B4B8-A7CA2671556F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -33,6 +35,10 @@ Global
 		{745C2C57-AABF-4D38-860D-6CD79B2ADD8D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{745C2C57-AABF-4D38-860D-6CD79B2ADD8D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{745C2C57-AABF-4D38-860D-6CD79B2ADD8D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1D688B96-AC58-42D9-B4B8-A7CA2671556F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1D688B96-AC58-42D9-B4B8-A7CA2671556F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1D688B96-AC58-42D9-B4B8-A7CA2671556F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1D688B96-AC58-42D9-B4B8-A7CA2671556F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
