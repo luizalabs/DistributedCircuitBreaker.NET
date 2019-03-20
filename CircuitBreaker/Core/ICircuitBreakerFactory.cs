@@ -12,7 +12,7 @@ namespace DistributedCircuitBreaker.Core
         /// <returns>new instance of CircuitBreaker</returns>
         /// <exception cref="System.ArgumentException">key;key must be provided</exception>
         /// <exception cref="System.ArgumentException">rules;At least one rule must be provided</exception>
-        CircuitBreaker Create(string key, List<IRule> rules);
+        ICircuitBreaker Create(string key, List<IRule> rules);
         /// <summary>
         /// Initializes an instance of CircuitBreaker 
         /// CircuitBreaker will be configured with Fixed number of exceptions allowed before break also considering a proportion of failures compared to total executions
@@ -24,7 +24,7 @@ namespace DistributedCircuitBreaker.Core
         /// <returns>new instance of CircuitBreaker</returns>
         /// <exception cref="System.ArgumentException">key;key must be provided</exception>
         /// <exception cref="System.ArgumentException">rules;At least one rule must be provided</exception>
-        CircuitBreaker Create(string key, int exceptionsAllowedBeforeBreaking, decimal failureRateAllowed);
+        ICircuitBreaker Create(string key, int exceptionsAllowedBeforeBreaking, decimal failureRateAllowed);
         /// <summary>
         /// Initializes an instance of CircuitBreaker 
         /// CircuitBreaker will be configured with Fixed number of exceptions allowed before break
@@ -34,6 +34,6 @@ namespace DistributedCircuitBreaker.Core
         /// <returns>new instance of CircuitBreaker</returns>
         /// <exception cref="System.ArgumentException">key;key must be provided</exception>
         /// <exception cref="System.ArgumentException">rules;At least one rule must be provided</exception>
-        CircuitBreaker Create(string key, int exceptionsAllowedBeforeBreaking);
+        ICircuitBreaker Create(string key, int exceptionsAllowedBeforeBreaking);
     }
 }

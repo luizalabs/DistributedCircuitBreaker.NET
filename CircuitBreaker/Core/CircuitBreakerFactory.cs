@@ -23,7 +23,7 @@ namespace DistributedCircuitBreaker.Core
         /// <exception cref="System.ArgumentException">key;key must be provided</exception>
         /// <exception cref="System.ArgumentException">rules;At least one rule must be provided</exception>
         /// <exception cref="System.ArgumentException">repository;Repository could not be null</exception>
-        public CircuitBreaker Create(string key,  List<IRule> rules)
+        public ICircuitBreaker Create(string key,  List<IRule> rules)
         {
             if (string.IsNullOrEmpty(key))
                 throw new ArgumentException("key must be provided");
@@ -46,7 +46,7 @@ namespace DistributedCircuitBreaker.Core
         /// <exception cref="System.ArgumentException">key;key must be provided</exception>
         /// <exception cref="System.ArgumentException">rules;At least one rule must be provided</exception>
         /// <exception cref="System.ArgumentException">repository;Repository could not be null</exception>
-        public CircuitBreaker Create(string key, int exceptionsAllowedBeforeBreaking, decimal failureRateAllowed)
+        public ICircuitBreaker Create(string key, int exceptionsAllowedBeforeBreaking, decimal failureRateAllowed)
         {
             var rules = new List<IRule>()
             {
@@ -67,7 +67,7 @@ namespace DistributedCircuitBreaker.Core
         /// <exception cref="System.ArgumentException">key;key must be provided</exception>
         /// <exception cref="System.ArgumentException">rules;At least one rule must be provided</exception>
         /// <exception cref="System.ArgumentException">repository;Repository could not be null</exception>
-        public CircuitBreaker Create(string key,int exceptionsAllowedBeforeBreaking)
+        public ICircuitBreaker Create(string key,int exceptionsAllowedBeforeBreaking)
         {
             var rules = new List<IRule>()
             {
