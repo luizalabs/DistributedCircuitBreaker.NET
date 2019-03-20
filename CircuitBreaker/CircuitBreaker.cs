@@ -9,7 +9,7 @@ namespace DistributedCircuitBreaker
     /// <summary>
     /// Responsible for controlling the circuit Break, validate if the rules are broken
     /// </summary>
-    public class CircuitBreaker
+    public class CircuitBreaker : ICircuitBreaker
     {
         private List<IRule> _rules;
         private HealthCount _healthCount ;
