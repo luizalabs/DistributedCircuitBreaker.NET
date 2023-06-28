@@ -22,7 +22,7 @@ namespace DistributedCircuitBreaker.Redis.DependencyInjection
             if(redisOptions.RedisConnectionConfiguration == null)
                 throw new ArgumentNullException(nameof(redisOptions.RedisConnectionConfiguration));
 
-            collection.AddDistributedRedisCache(options => options.Configuration = redisOptions.RedisConnectionConfiguration);
+            collection.AddStackExchangeRedisCache(options => options.Configuration = redisOptions.RedisConnectionConfiguration);
 
             collection.AddDistributedCircuitBreaker(options =>
             {
